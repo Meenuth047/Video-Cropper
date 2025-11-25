@@ -1,0 +1,24 @@
+# Sample FFmpeg Commands for Video Cropping
+
+# Basic crop: Extract 2 minutes starting at 10 minutes
+ffmpeg -i input.mp4 -ss 600 -t 120 -c copy output.mp4
+
+# Crop with re-encoding (more reliable, slower)
+ffmpeg -i input.mp4 -ss 600 -t 120 output.mp4
+
+# Crop and compress
+ffmpeg -i input.mp4 -ss 600 -t 120 -c:v libx264 -crf 23 output.mp4
+
+# Crop multiple segments from same video
+ffmpeg -i input.mp4 -ss 600 -t 120 -c copy clip1.mp4
+ffmpeg -i input.mp4 -ss 1200 -t 120 -c copy clip2.mp4
+ffmpeg -i input.mp4 -ss 1800 -t 120 -c copy clip3.mp4
+
+# Accurate frame-perfect crop (slower)
+ffmpeg -ss 600 -i input.mp4 -t 120 -c copy output.mp4
+
+# Crop and resize
+ffmpeg -i input.mp4 -ss 600 -t 120 -vf scale=1280:720 output.mp4
+
+# Crop with audio normalization
+ffmpeg -i input.mp4 -ss 600 -t 120 -af loudnorm output.mp4
