@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Cropper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+    <div class="max-w-5xl mx-auto p-8">
+        <h1 class="text-4xl font-bold text-white mb-2 text-center">Interactive Video Cropper</h1>
+        <p class="text-purple-200 text-center mb-8">Select any 2-minute segment from your video</p>
+
+        <div id="app">
+            <div id="uploadSection" class="bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 text-center">
+                <svg class="w-16 h-16 text-purple-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <label class="cursor-pointer">
+                    <input type="file" id="videoInput" accept="video/*" class="hidden">
+                    <div class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg inline-block transition-colors font-semibold">
+                        Select Video File
+                    </div>
+                </label>
+                <p class="text-purple-200 mt-4">Choose a video from your RGB_videos folder</p>
+            </div>
+
+            <div id="playerSection" class="space-y-6 hidden">
+                <div class="bg-black rounded-2xl overflow-hidden shadow-2xl">
+                    <video id="videoPlayer" class="w-full" controls></video>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                    <div class="flex items-center gap-4 mb-4">
+                        <button id="playPauseBtn" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-colors">
+                            <svg id="playIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                            </svg>
+                        </button>
+                        <div class="flex-1">
+                            <input type="range" id="seekBar" min="0" max="100" value="0" 
+                                   class="w-full h-2 bg-purple-300 rounded-lg appearance-none cursor-pointer slider">
+                            <div class="flex justify-between text-purple-200 text-sm mt-1">
+                                <span id="currentTimeDisplay">00:00</span>
+                                <span id="durationDisplay">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <button id="setStartBtn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
+                                Set Start Point
+                            </button>
+                            <p id="startTimeDisplay" class="text-green-300 text-sm mt-2 text-center hidden"></p>
+                        </div>
+                        <div>
+                            <button id="setEndBtn" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
+                                Set End Point
+                            </button>
+                            <p id="endTimeDisplay" class="text-red-300 text-sm mt-2 text-center hidden"></p>
+                        </div>
+                    </div>
+
+                    <div id="selectionInfo" class="bg-purple-600/30 rounded-lg p-4 mb-4 hidden">
+                        <div class="flex items-center justify-between text-white">
+                            <div>
+                                <p class="text-sm text-purple-200">Selected Duration:</p>
+                                <p class="text-2xl font-bold" id="durationValue">00:00</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-purple-200">Range:</p>
+                                <p class="font-semibold" id="rangeValue">00:00 → 00:00</p>
+                            </div>
+                        </div>
+                        <p id="warningText" class="text-yellow-300 text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <button id="cropBtn" disabled 
+                            class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg transition-colors font-bold text-lg flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path>
+                        </svg>
+                        Get Crop Instructions
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <label class="cursor-pointer">
+                        <input type="file" id="videoInput2" accept="video/*" class="hidden">
+                        <div class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg inline-block transition-colors border border-white/20">
+                            Load Different Video
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('videoPlayer');
+        let startTime = null;
+        let endTime = null;
+        let videoFileName = '';
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '00:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('video/')) {
+                videoFileName = file.name;
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                document.getElementById('uploadSection').classList.add('hidden');
+                document.getElementById('playerSection').classList.remove('hidden');
+                startTime = null;
+                endTime = null;
+                document.getElementById('startTimeDisplay').classList.add('hidden');
+                document.getElementById('endTimeDisplay').classList.add('hidden');
+                document.getElementById('selectionInfo').classList.add('hidden');
+                document.getElementById('cropBtn').disabled = true;
+            }
+        }
+
+        document.getElementById('videoInput').addEventListener('change', handleFileSelect);
+        document.getElementById('videoInput2').addEventListener('change', handleFileSelect);
+
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                document.getElementById('playIcon').classList.add('hidden');
+                document.getElementById('pauseIcon').classList.remove('hidden');
+            } else {
+                video.pause();
+                document.getElementById('playIcon').classList.remove('hidden');
+                document.getElementById('pauseIcon').classList.add('hidden');
+            }
+        });
+
+        video.addEventListener('timeupdate', () => {
+            const current = video.currentTime;
+            const duration = video.duration;
+            document.getElementById('seekBar').value = (current / duration) * 100;
+            document.getElementById('currentTimeDisplay').textContent = formatTime(current);
+            
+            const percent = (current / duration) * 100;
+            document.getElementById('seekBar').style.background = 
+                `linear-gradient(to right, #9333ea ${percent}%, #d8b4fe ${percent}%)`;
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            document.getElementById('durationDisplay').textContent = formatTime(video.duration);
+        });
+
+        document.getElementById('seekBar').addEventListener('input', (e) => {
+            const time = (e.target.value / 100) * video.duration;
+            video.currentTime = time;
+        });
+
+        document.getElementById('setStartBtn').addEventListener('click', () => {
+            startTime = video.currentTime;
+            document.getElementById('startTimeDisplay').textContent = `Start: ${formatTime(startTime)}`;
+            document.getElementById('startTimeDisplay').classList.remove('hidden');
+            
+            const proposedEnd = startTime + 120;
+            endTime = Math.min(proposedEnd, video.duration);
+            document.getElementById('endTimeDisplay').textContent = `End: ${formatTime(endTime)}`;
+            document.getElementById('endTimeDisplay').classList.remove('hidden');
+            
+            updateSelectionInfo();
+        });
+
+        document.getElementById('setEndBtn').addEventListener('click', () => {
+            endTime = video.currentTime;
+            document.getElementById('endTimeDisplay').textContent = `End: ${formatTime(endTime)}`;
+            document.getElementById('endTimeDisplay').classList.remove('hidden');
+            updateSelectionInfo();
+        });
+
+        function updateSelectionInfo() {
+            if (startTime !== null && endTime !== null) {
+                const duration = Math.abs(endTime - startTime);
+                document.getElementById('selectionInfo').classList.remove('hidden');
+                document.getElementById('durationValue').textContent = formatTime(duration);
+                document.getElementById('rangeValue').textContent = 
+                    `${formatTime(startTime)} → ${formatTime(endTime)}`;
+                
+                if (duration > 120) {
+                    document.getElementById('warningText').textContent = 
+                        `⚠ Duration exceeds 2 minutes (${formatTime(duration)})`;
+                    document.getElementById('warningText').classList.remove('hidden');
+                } else {
+                    document.getElementById('warningText').classList.add('hidden');
+                }
+                
+                document.getElementById('cropBtn').disabled = false;
+            }
+        }
+
+        document.getElementById('cropBtn').addEventListener('click', () => {
+            const duration = Math.abs(endTime - startTime);
+            const instructions = `To crop your video from ${formatTime(startTime)} to ${formatTime(endTime)} (${formatTime(duration)} duration):
+
+Using FFmpeg (recommended):
+----------------------------
+Install FFmpeg if you haven't: https://ffmpeg.org/download.html
+
+Then run this command in your terminal:
+
+ffmpeg -i "${videoFileName}" -ss ${startTime.toFixed(2)} -t ${duration.toFixed(2)} -c copy "cropped_${videoFileName}"
+
+This will create a new file called "cropped_${videoFileName}" with your selected segment.
+
+Alternative: Using Python (moviepy)
+------------------------------------
+pip install moviepy
+
+from moviepy.editor import VideoFileClip
+video = VideoFileClip("${videoFileName}")
+cropped = video.subclip(${startTime.toFixed(2)}, ${endTime.toFixed(2)})
+cropped.write_videofile("cropped_${videoFileName}")
+`;
+
+            const blob = new Blob([instructions], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'crop_instructions.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('Crop instructions downloaded! Check the text file for commands to crop your video.');
+        });
+    </script>
+</body>
+</html>
