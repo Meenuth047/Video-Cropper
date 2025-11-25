@@ -1,19 +1,19 @@
-# 🎬 Interactive Video Cropper
+# Interactive Video Cropper
 
 A lightweight, browser-based tool for selecting and cropping video segments. Perfect for extracting specific time ranges from long videos without complex video editing software.
 
-![Video Cropper Demo](docs/demo.png)
+![Video Cropper Demo](/home/airbotix/Video-Cropper/docs/video-cropping.png)
 
-## ✨ Features
+## Features
 
-- 🎯 **Visual Selection**: Play video and visually select start/end points
-- ⚡ **Fast Processing**: Uses FFmpeg with stream copy (no re-encoding)
-- 🌐 **Browser-Based**: No installation needed - runs directly in your browser
-- 📝 **Command Generation**: Automatically generates FFmpeg/Python commands
-- 🎨 **Modern UI**: Clean, intuitive interface with real-time feedback
-- 📊 **Duration Display**: Shows selected segment duration and warns if exceeds target
+- **Visual Selection**: Play video and visually select start/end points
+- **Fast Processing**: Uses FFmpeg with stream copy (no re-encoding)
+- **Browser-Based**: No installation needed - runs directly in your browser
+- **Command Generation**: Automatically generates FFmpeg/Python commands
+- **Modern UI**: Clean, intuitive interface with real-time feedback
+- **Duration Display**: Shows selected segment duration and warns if exceeds target
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Method 1: Direct Browser Use (Easiest)
 
@@ -26,7 +26,7 @@ A lightweight, browser-based tool for selecting and cropping video segments. Per
 ### Method 2: Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/video-cropper.git
+git clone https://github.com/meenuth047/video-cropper.git
 cd video-cropper
 # Open video_cropper.html in your browser
 xdg-open video_cropper.html  # Linux
@@ -34,7 +34,7 @@ open video_cropper.html      # macOS
 start video_cropper.html     # Windows
 ```
 
-## 📋 Prerequisites
+## Prerequisites
 
 To actually crop videos, you need ONE of:
 
@@ -55,7 +55,7 @@ brew install ffmpeg
 pip install moviepy
 ```
 
-## 🎮 Usage
+## Usage
 
 ### Step 1: Select Video
 Click "Select Video File" and choose your video.
@@ -83,7 +83,7 @@ cropped = video.subclip(659.65, 680.87)
 cropped.write_videofile("cropped_output.mp4")
 ```
 
-## 📖 Examples
+## Examples
 
 ### Example 1: Extract 2-minute segment
 ```bash
@@ -96,7 +96,7 @@ ffmpeg -i "long_video.mp4" -ss 600 -t 120 -c copy "excerpt.mp4"
 ### Example 2: Batch crop multiple videos
 See `scripts/batch_crop.sh` for batch processing example.
 
-## 🛠️ Advanced Usage
+## Advanced Usage
 
 ### FFmpeg Parameters Explained
 
@@ -122,13 +122,12 @@ ffmpeg -i input.mp4 -ss 600 -t 120 -c copy output.mp4
 ffmpeg -ss 600 -i input.mp4 -t 120 -c copy output.mp4
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 video-cropper/
 ├── video_cropper.html      # Main application
 ├── README.md               # This file
-├── LICENSE                 # MIT License
 ├── docs/
 │   ├── demo.png           # Screenshot
 │   └── USAGE.md           # Detailed usage guide
@@ -140,21 +139,6 @@ video-cropper/
     └── crop_video.py      # Python helper script
 ```
 
-## 🎯 Use Cases
-
-- 📹 **Aerial/Drone Footage**: Extract interesting segments from long flights
-- 🎓 **Educational Content**: Clip specific sections from lectures
-- 🎮 **Gaming**: Extract highlights from gameplay recordings
-- 🎬 **Video Production**: Quick rough cuts before detailed editing
-- 📊 **Surveillance**: Extract relevant time periods from security footage
-
-## 🔧 Troubleshooting
-
-### Video won't play in browser
-- Check browser console for errors
-- Ensure video codec is supported (H.264/MP4 recommended)
-- Try converting: `ffmpeg -i input.avi -c:v libx264 output.mp4`
-
 ### FFmpeg not found
 ```bash
 # Check if installed
@@ -164,35 +148,3 @@ ffmpeg -version
 sudo apt-get install ffmpeg  # Linux
 brew install ffmpeg          # macOS
 ```
-
-### Cropped video has issues
-- Remove `-c copy` to re-encode: `ffmpeg -i input.mp4 -ss 600 -t 120 output.mp4`
-- This is slower but more reliable for complex videos
-
-## 🤝 Contributing
-
-Contributions welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with vanilla JavaScript (no frameworks required)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Video processing powered by [FFmpeg](https://ffmpeg.org/)
-
-## 📧 Contact
-
-Project Link: [https://github.com/yourusername/video-cropper](https://github.com/yourusername/video-cropper)
-
----
-
-⭐ If you find this tool useful, please consider giving it a star!
