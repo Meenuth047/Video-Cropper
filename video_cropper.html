@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Cropper</title>
+    <title>Video Cropper - Accurate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .slider::-webkit-slider-thumb {
@@ -97,6 +97,26 @@
                             </div>
                         </div>
                         <p id="warningText" class="text-yellow-300 text-sm mt-2 hidden"></p>
+                    </div>
+
+                    <div class="bg-blue-600/20 rounded-lg p-4 mb-4">
+                        <p class="text-blue-200 font-semibold mb-2">Cropping Method:</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center text-white cursor-pointer">
+                                <input type="radio" name="method" value="accurate" checked class="mr-3">
+                                <div>
+                                    <span class="font-semibold">Accurate (Recommended)</span>
+                                    <span class="text-blue-200 text-sm block">Frame-perfect, but slower (re-encodes)</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center text-white cursor-pointer">
+                                <input type="radio" name="method" value="fast" class="mr-3">
+                                <div>
+                                    <span class="font-semibold">Fast</span>
+                                    <span class="text-blue-200 text-sm block">Quick but may be off by a few seconds</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <button id="cropBtn" disabled 
@@ -227,37 +247,92 @@
 
         document.getElementById('cropBtn').addEventListener('click', () => {
             const duration = Math.abs(endTime - startTime);
-            const instructions = `To crop your video from ${formatTime(startTime)} to ${formatTime(endTime)} (${formatTime(duration)} duration):
-
-Using FFmpeg (recommended):
-----------------------------
-Install FFmpeg if you haven't: https://ffmpeg.org/download.html
-
-Then run this command in your terminal:
-
-ffmpeg -i "${videoFileName}" -ss ${startTime.toFixed(2)} -t ${duration.toFixed(2)} -c copy "cropped_${videoFileName}"
-
-This will create a new file called "cropped_${videoFileName}" with your selected segment.
-
-Alternative: Using Python (moviepy)
-------------------------------------
-pip install moviepy
-
-from moviepy.editor import VideoFileClip
+            const method = document.querySelector('input[name="method"]:checked').value;
+            
+            let ffmpegCommand, pythonCode, explanation;
+            
+            if (method === 'accurate') {
+                // Accurate method: -ss BEFORE -i, re-encode for frame accuracy
+                ffmpegCommand = `ffmpeg -ss ${startTime.toFixed(2)} -i "${videoFileName}" -t ${duration.toFixed(2)} -c:v libx264 -c:a aac "cropped_${videoFileName}"`;
+                explanation = `ACCURATE METHOD (Frame-Perfect):
+This will take longer but gives you EXACTLY the frames you selected.
+The -ss is placed BEFORE -i for accurate seeking, and re-encodes the video.`;
+                
+                pythonCode = `from moviepy.editor import VideoFileClip
 video = VideoFileClip("${videoFileName}")
 cropped = video.subclip(${startTime.toFixed(2)}, ${endTime.toFixed(2)})
-cropped.write_videofile("cropped_${videoFileName}")
+cropped.write_videofile("cropped_${videoFileName}", codec='libx264', audio_codec='aac')`;
+            } else {
+                // Fast method: -ss BEFORE -i, but with -c copy for speed
+                ffmpegCommand = `ffmpeg -ss ${startTime.toFixed(2)} -i "${videoFileName}" -t ${duration.toFixed(2)} -c copy "cropped_${videoFileName}"`;
+                explanation = `FAST METHOD (Quick but approximate):
+This is very fast but may be off by 1-3 seconds due to keyframe seeking.
+Use this for quick previews, then use Accurate method for final cuts.`;
+                
+                pythonCode = `from moviepy.editor import VideoFileClip
+video = VideoFileClip("${videoFileName}")
+cropped = video.subclip(${startTime.toFixed(2)}, ${endTime.toFixed(2)})
+cropped.write_videofile("cropped_${videoFileName}")`;
+            }
+
+            const instructions = `VIDEO CROP INSTRUCTIONS
+========================
+Video: ${videoFileName}
+Start time: ${formatTime(startTime)} (${startTime.toFixed(2)} seconds)
+End time: ${formatTime(endTime)} (${endTime.toFixed(2)} seconds)
+Duration: ${formatTime(duration)} (${duration.toFixed(2)} seconds)
+
+${explanation}
+
+OPTION 1: Using FFmpeg (recommended)
+-------------------------------------
+Install FFmpeg if you haven't: https://ffmpeg.org/download.html
+
+Command to run in your terminal:
+
+${ffmpegCommand}
+
+This will create: cropped_${videoFileName}
+
+
+OPTION 2: Using Python (moviepy)
+---------------------------------
+First install moviepy:
+pip install moviepy
+
+Then run this Python code:
+
+${pythonCode}
+
+
+TROUBLESHOOTING:
+----------------
+1. If the cropped video is the wrong segment:
+   - Use the ACCURATE method above
+   - Make sure you noted the correct start/end times
+
+2. If FFmpeg gives errors:
+   - Remove the output file if it exists
+   - Try without -c copy: add -c:v libx264 -c:a aac
+
+3. For best results:
+   - Always use ACCURATE method for final production
+   - Use FAST method only for quick previews
+
+4. To verify your crop before processing:
+   - Play the original video and manually check timestamps
+   - The times shown in this tool match the video player timestamps
 `;
 
             const blob = new Blob([instructions], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'crop_instructions.txt';
+            a.download = `crop_instructions_${method}.txt`;
             a.click();
             URL.revokeObjectURL(url);
             
-            alert('Crop instructions downloaded! Check the text file for commands to crop your video.');
+            alert(`${method === 'accurate' ? 'ACCURATE' : 'FAST'} crop instructions downloaded!\n\nCheck the text file for the command to crop your video.\n\n${method === 'accurate' ? 'This will give you frame-perfect accuracy but takes longer.' : 'This is fast but may be off by a few seconds.'}`);
         });
     </script>
 </body>
