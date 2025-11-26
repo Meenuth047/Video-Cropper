@@ -46,8 +46,23 @@
             </div>
 
             <div id="playerSection" class="space-y-6 hidden">
-                <div class="bg-black rounded-2xl overflow-hidden shadow-2xl">
+                <div id="videoContainer" class="bg-black rounded-2xl overflow-hidden shadow-2xl relative">
                     <video id="videoPlayer" class="w-full" controls></video>
+                    
+                    <!-- Skip buttons overlay on video - hidden by default -->
+                    <button id="backward10Btn" class="skip-btn-left absolute top-1/2 left-8 transform -translate-y-1/2 bg-gray-800/80 text-white w-20 h-20 rounded-full transition-all flex flex-col items-center justify-center shadow-2xl opacity-0 pointer-events-none z-10">
+                        <svg class="w-8 h-8 mb-1" fill="white" viewBox="0 0 24 24">
+                            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+                        </svg>
+                        <span class="text-xs font-semibold">10 seconds</span>
+                    </button>
+                    
+                    <button id="forward10Btn" class="skip-btn-right absolute top-1/2 right-8 transform -translate-y-1/2 bg-gray-800/80 text-white w-20 h-20 rounded-full transition-all flex flex-col items-center justify-center shadow-2xl opacity-0 pointer-events-none z-10">
+                        <svg class="w-8 h-8 mb-1" fill="white" viewBox="0 0 24 24">
+                            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+                        </svg>
+                        <span class="text-xs font-semibold">10 seconds</span>
+                    </button>
                 </div>
 
                 <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
@@ -60,6 +75,7 @@
                                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
                             </svg>
                         </button>
+                        
                         <div class="flex-1">
                             <input type="range" id="seekBar" min="0" max="100" value="0" 
                                    class="w-full h-2 bg-purple-300 rounded-lg appearance-none cursor-pointer slider">
@@ -70,18 +86,46 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <button id="setStartBtn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
-                                Set Start Point
+                    <div class="bg-white/5 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-white font-semibold">Set Time Points</h3>
+                            <button id="toggleManualBtn" class="text-blue-300 hover:text-blue-200 text-sm underline">
+                                Manual Entry
                             </button>
-                            <p id="startTimeDisplay" class="text-green-300 text-sm mt-2 text-center hidden"></p>
                         </div>
-                        <div>
-                            <button id="setEndBtn" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
-                                Set End Point
+                        
+                        <div id="buttonMode" class="grid grid-cols-2 gap-4">
+                            <div>
+                                <button id="setStartBtn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
+                                    Set Start Point
+                                </button>
+                                <p id="startTimeDisplay" class="text-green-300 text-sm mt-2 text-center hidden"></p>
+                            </div>
+                            <div>
+                                <button id="setEndBtn" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold">
+                                    Set End Point
+                                </button>
+                                <p id="endTimeDisplay" class="text-red-300 text-sm mt-2 text-center hidden"></p>
+                            </div>
+                        </div>
+                        
+                        <div id="manualMode" class="hidden space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-green-300 text-sm block mb-2">Start Time (MM:SS)</label>
+                                    <input type="text" id="manualStartInput" placeholder="15:06" 
+                                           class="w-full bg-white/10 border border-green-500/50 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:border-green-500">
+                                </div>
+                                <div>
+                                    <label class="text-red-300 text-sm block mb-2">End Time (MM:SS)</label>
+                                    <input type="text" id="manualEndInput" placeholder="17:06" 
+                                           class="w-full bg-white/10 border border-red-500/50 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:border-red-500">
+                                </div>
+                            </div>
+                            <button id="applyManualBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-semibold">
+                                Apply Times
                             </button>
-                            <p id="endTimeDisplay" class="text-red-300 text-sm mt-2 text-center hidden"></p>
+                            <p class="text-purple-200 text-xs text-center">Format: MM:SS (e.g., 15:06 or 1:23:45 for hours)</p>
                         </div>
                     </div>
 
@@ -203,6 +247,132 @@
         document.getElementById('seekBar').addEventListener('input', (e) => {
             const time = (e.target.value / 100) * video.duration;
             video.currentTime = time;
+        });
+
+        // 10 second skip buttons
+        document.getElementById('backward10Btn').addEventListener('click', () => {
+            video.currentTime = Math.max(0, video.currentTime - 10);
+        });
+
+        document.getElementById('forward10Btn').addEventListener('click', () => {
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+        });
+
+        // Show/hide skip buttons on mouse move over video
+        const videoContainer = document.getElementById('videoContainer');
+        const backwardBtn = document.getElementById('backward10Btn');
+        const forwardBtn = document.getElementById('forward10Btn');
+        let hideButtonsTimeout;
+
+        videoContainer.addEventListener('mousemove', (e) => {
+            const rect = videoContainer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const containerWidth = rect.width;
+            const leftZone = containerWidth * 0.3; // Left 30%
+            const rightZone = containerWidth * 0.7; // Right 70%
+            
+            // Show buttons with pointer events when mouse is in zones
+            if (mouseX < leftZone) {
+                backwardBtn.style.opacity = '1';
+                backwardBtn.style.pointerEvents = 'auto';
+            } else {
+                backwardBtn.style.opacity = '0';
+                backwardBtn.style.pointerEvents = 'none';
+            }
+            
+            if (mouseX > rightZone) {
+                forwardBtn.style.opacity = '1';
+                forwardBtn.style.pointerEvents = 'auto';
+            } else {
+                forwardBtn.style.opacity = '0';
+                forwardBtn.style.pointerEvents = 'none';
+            }
+            
+            // Clear existing timeout
+            clearTimeout(hideButtonsTimeout);
+            
+            // Hide buttons after 1 second of no movement
+            hideButtonsTimeout = setTimeout(() => {
+                backwardBtn.style.opacity = '0';
+                backwardBtn.style.pointerEvents = 'none';
+                forwardBtn.style.opacity = '0';
+                forwardBtn.style.pointerEvents = 'none';
+            }, 1000);
+        });
+
+        videoContainer.addEventListener('mouseleave', () => {
+            backwardBtn.style.opacity = '0';
+            backwardBtn.style.pointerEvents = 'none';
+            forwardBtn.style.opacity = '0';
+            forwardBtn.style.pointerEvents = 'none';
+            clearTimeout(hideButtonsTimeout);
+        });
+
+        // Toggle manual entry mode
+        document.getElementById('toggleManualBtn').addEventListener('click', () => {
+            const buttonMode = document.getElementById('buttonMode');
+            const manualMode = document.getElementById('manualMode');
+            const toggleBtn = document.getElementById('toggleManualBtn');
+            
+            if (buttonMode.classList.contains('hidden')) {
+                buttonMode.classList.remove('hidden');
+                manualMode.classList.add('hidden');
+                toggleBtn.textContent = 'Manual Entry';
+            } else {
+                buttonMode.classList.add('hidden');
+                manualMode.classList.remove('hidden');
+                toggleBtn.textContent = 'Button Mode';
+            }
+        });
+
+        // Parse time string (MM:SS or HH:MM:SS) to seconds
+        function parseTimeString(timeStr) {
+            const parts = timeStr.trim().split(':').map(p => parseInt(p));
+            if (parts.length === 2) {
+                // MM:SS
+                return parts[0] * 60 + parts[1];
+            } else if (parts.length === 3) {
+                // HH:MM:SS
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            }
+            return null;
+        }
+
+        // Apply manual time entry
+        document.getElementById('applyManualBtn').addEventListener('click', () => {
+            const startInput = document.getElementById('manualStartInput').value;
+            const endInput = document.getElementById('manualEndInput').value;
+            
+            const parsedStart = parseTimeString(startInput);
+            const parsedEnd = parseTimeString(endInput);
+            
+            if (parsedStart === null || parsedEnd === null) {
+                alert('Invalid time format! Use MM:SS (e.g., 15:06) or HH:MM:SS (e.g., 1:23:45)');
+                return;
+            }
+            
+            if (parsedStart >= parsedEnd) {
+                alert('Start time must be before end time!');
+                return;
+            }
+            
+            if (parsedEnd > video.duration) {
+                alert(`End time (${endInput}) exceeds video duration (${formatTime(video.duration)})!`);
+                return;
+            }
+            
+            startTime = parsedStart;
+            endTime = parsedEnd;
+            
+            document.getElementById('startTimeDisplay').textContent = `Start: ${formatTime(startTime)}`;
+            document.getElementById('startTimeDisplay').classList.remove('hidden');
+            document.getElementById('endTimeDisplay').textContent = `End: ${formatTime(endTime)}`;
+            document.getElementById('endTimeDisplay').classList.remove('hidden');
+            
+            updateSelectionInfo();
+            
+            // Jump video to start time
+            video.currentTime = startTime;
         });
 
         document.getElementById('setStartBtn').addEventListener('click', () => {
