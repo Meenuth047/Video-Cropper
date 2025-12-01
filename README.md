@@ -2,7 +2,7 @@
 
 A lightweight, browser-based tool for selecting and cropping video segments. Perfect for extracting specific time ranges from long videos without complex video editing software.
 
-![Video Cropper Demo](/Video-Cropper/docs/video-cropping.png)
+![Alt text](docs/Layout.png)
 
 ## Features
 
