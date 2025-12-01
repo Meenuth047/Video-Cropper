@@ -2,7 +2,7 @@
 
 A lightweight, browser-based tool for selecting and cropping video segments. Perfect for extracting specific time ranges from long videos without complex video editing software.
 
-![Alt text](docs/Layout.png)
+![Alt text](docs/Button_mode.png)
 
 ## Features
 
